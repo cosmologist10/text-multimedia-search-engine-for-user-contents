@@ -86,8 +86,11 @@ class SearchWord(object):
         rebuild = False
 
         if my_file.is_file():
-            file_last_modify = time.ctime(os.path.getmtime(complete_name))
-            dir_last_modify = time.ctime(os.path.getmtime(loc))
+            file_last_modify = os.path.getmtime(complete_name)
+            print 'File last modified at'+ ':' + str(file_last_modify)
+            dir_last_modify = os.path.getmtime(loc)
+            print 'Directory last modified at' + ':' + str(dir_last_modify)
+
             comp = dir_last_modify < file_last_modify
 
             if comp:
@@ -100,7 +103,7 @@ class SearchWord(object):
                 rebuild = True
 
         if rebuild:
-            print 'Directory got modified at ' + dir_last_modify + ', rebuilding index...'
+            print 'Directory got modified at ' + time.ctime(dir_last_modify) + ', rebuilding index...'
         else:
             print 'Index not present, building it...'
 
@@ -118,6 +121,7 @@ class SearchWord(object):
         """
 
         final_list = []
+        print (dic)
         for key, value in dic.items():
             if key[0] == self.searchword:
                 x = (key[1], value)

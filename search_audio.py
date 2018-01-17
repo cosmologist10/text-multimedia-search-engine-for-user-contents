@@ -5,9 +5,10 @@ import hashlib
 import cPickle
 import operator
 import pathlib
-import pprint
+import json
 from pathlib import Path
 from collections import defaultdict
+from text_mod import utils
 
 # metadata extraction library
 import exiftool
@@ -18,9 +19,9 @@ from text_mod.search_word import SearchWord
 class SearchAudio(SearchWord):
     """ Audio searcher cum indexer using python dictionaries. """
 
-    def __init__(self, searchword):
+    def __init__(self, searchword, max_size):
 
-        SearchWord.__init__(self, searchword)
+        SearchWord.__init__(self, searchword, max_size)
         self.my_extensions = ('.mp3', '.ogg', '.wav', '.flac', '.wma')
 
 
@@ -31,14 +32,10 @@ class SearchAudio(SearchWord):
         files.
         """
 
-        filter_set = {'set_1': {'file_modify_date',
-                                'file_inode_change_date',
-                                'file_access_date',
-                                'file_type',
+        filter_set = {'set_1': {'file_type',
                                 'file_size',
                                 'duration'},
-                      'set_2': {'title',
-                                'artist',
+                      'set_2': {'artist',
                                 'album',
                                 'genre',
                                 'year'}}
@@ -90,9 +87,9 @@ class SearchAudio(SearchWord):
 
         if my_file.is_file():
             file_last_modify = os.path.getmtime(complete_name)
-            print file_last_modify
+            print 'File last modified at'+ ':' + str(file_last_modify)
             dir_last_modify = os.path.getmtime(loc)
-            print dir_last_modify
+            print 'Directory last modified at' + ':' + str(dir_last_modify)
 
             comp = dir_last_modify < file_last_modify
 
@@ -100,8 +97,7 @@ class SearchAudio(SearchWord):
                 # If index is newer load index
                 print 'Loading', complete_name
                 index = self.load(complete_name)
-                # 2nd argument indicating no index was created
-                return index, False
+                return index
             else:
                 # Else rebuild index
                 rebuild = True
@@ -111,14 +107,29 @@ class SearchAudio(SearchWord):
         else:
             print 'Index not present, building it...'
 
-        files = self.file_gen(loc)
+        with utils.clock_timer() as timer:
+            index = self.index_audio_meta(self.file_gen(loc))
 
-        index = self.index_audio_meta(files)
         self.save(index, complete_name)
         print 'Index built at', complete_name
 
-        # 2nd argument indicating index was created
-        return index, True
+        return index
+
+    def search_filename(self, dic, metatag ,hits):
+        """ Return the filename of respective artist/album/genre/year. """
+
+        final_list = []
+        for filename, data in dic.iteritems():
+            for key, value in data.items():
+                if key == metatag and value == self.searchword:
+                    final_list.append(filename)
+
+        print 'Found ' + str(len(final_list)) + 'hits'
+        print 'Showing', int(hits), 'hits'
+        for files in final_list:
+            print files
+
+
 
 
 if __name__ == "__main__":
@@ -127,10 +138,45 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description='It takes searchword as positional argument and locations as optional argument.')
-    parser.add_argument('searchword', help='The searchword which, you are looking for.')
-    parser.add_argument('-p', dest='loc', required=True, help='Path of directory.')
+    parser.add_argument('-artist', '--artist', help='')
+    parser.add_argument('-album', '--album', help ='')
+    parser.add_argument('-genre', '--genre', help='')
+    parser.add_argument('-year', '--year', help = '')
+    parser.add_argument('-d', '--dir', required=True, help='Full path of directory you want to index and search')
+    parser.add_argument('-s', '--size', required=True, help='Maximum size of the file')
+    parser.add_argument('-n', '--num', required=True, help='Number of hits')
+
+    if len(sys.argv)<4:
+        sys.argv.append('-h')
+
     args = parser.parse_args()
 
-    searcher = SearchAudio(args.searchword)
-    index = searcher.index_audio_files(args.loc)
-    pprint.pprint(index, indent=4)
+    search_path = str(args.dir)
+    max_size = str(args.size)
+    number_of_hits = str(args.num)
+
+    try :
+        if args.artist:
+            searchword = str(args.artist).lower()
+            metatag = 'artist'
+        elif args.album:
+            searchword = str(args.album).lower()
+            metatag = 'album'
+        elif args.genre:
+            searchword = str(args.genre).lower()
+            metatag = 'genre'
+        elif args.year:
+            searchword = int(args.year)
+            metatag = 'year'
+
+        searcher = SearchAudio(searchword, max_size)
+        indexer = searcher.index_audio_files(search_path)
+
+        if indexer != None:
+            searcher.search_filename(indexer, metatag, number_of_hits)
+
+        else:
+            print 'Error, corrupt or non-existing index!'
+
+    except NameError:
+        print ('Need anyone arguments among artist,album, genre, year')

@@ -17,8 +17,8 @@ from text_mod.search_word import SearchWord
 class SearchImage(SearchWord):
     """ Image searcher cum indexer using python dictionaries. """
 
-    def __init__(self, searchword):
-        SearchWord.__init__(self, searchword)
+    def __init__(self, searchword, max_size):
+        SearchWord.__init__(self, searchword, max_size)
         self.my_extensions = ('.png', '.tif', '.jpg', '.gif', '.JPG')
 
     def index_img_meta(self, img_flist):
@@ -135,8 +135,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='It takes searchword as positional argument and locations as optional argument.')
     parser.add_argument('searchword', help='The searchword which, you are looking for.')
     parser.add_argument('-p', dest='loc', required=True, help='Path of directory.')
+    parser.add_argument('-s', '--size', required=True, help='Maximum size of the file')
+    if len(sys.argv)<3:
+        sys.argv.append('-h')
+
     args = parser.parse_args()
 
-    searcher = SearchImage(args.searchword)
+    max_size = str(args.size)
+
+    searcher = SearchImage(args.searchword, max_size)
     index, status = searcher.index_image_files(args.loc)
     print json.dumps(index, indent=4)
