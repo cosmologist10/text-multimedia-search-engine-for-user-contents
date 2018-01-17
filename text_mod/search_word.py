@@ -129,9 +129,13 @@ class SearchWord(object):
 
         print 'Found ' + str(len(final_list)) + ' hits'
         result = sorted(final_list, key=operator.itemgetter(1), reverse=True)
-        print 'Showing', int(hits), 'hits'
-        for i in result[:int(hits)]:
 
+        if len(final_list) > hits:
+            print 'Showing', int(hits), 'hits'
+        else:
+            print 'Showing', str(len(final_list)), 'hits instead of', str(hits), 'hits'
+
+        for i in result[:int(hits)]:
             print i[0],'=>', i[1]
 
 
