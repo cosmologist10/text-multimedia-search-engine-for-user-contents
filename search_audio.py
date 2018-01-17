@@ -33,8 +33,7 @@ class SearchAudio(SearchWord):
         """
 
         filter_set = {'set_1': {'file_type',
-                                'file_size',
-                                'duration'},
+                                'file_size'},
                       'set_2': {'artist',
                                 'album',
                                 'genre',
@@ -69,8 +68,9 @@ class SearchAudio(SearchWord):
 
                         # Check if this is there in my filter_set
                         if final_key in my_set:
-                            target[fname][final_key] = value
-
+                            if type(value) == unicode:
+                                value = value.encode('utf-8')
+                            target[fname][final_key] = str(value).lower().strip()
         return target
 
     def index_audio_files(self, loc):
@@ -124,8 +124,13 @@ class SearchAudio(SearchWord):
                 if key == metatag and value == self.searchword:
                     final_list.append(filename)
 
-        print 'Found ' + str(len(final_list)) + 'hits'
-        print 'Showing', int(hits), 'hits'
+        print 'Found', str(len(final_list)), 'hits'
+
+        if len(final_list) > hits:
+            print 'Showing', str(hits), 'hits'
+        else:
+            print 'Showing', str(len(final_list)), 'hits instead of', str(hits), 'hits'
+
         for files in final_list:
             print files
 
@@ -166,7 +171,7 @@ if __name__ == "__main__":
             searchword = str(args.genre).lower()
             metatag = 'genre'
         elif args.year:
-            searchword = int(args.year)
+            searchword = str(args.year)
             metatag = 'year'
 
         searcher = SearchAudio(searchword, max_size)
