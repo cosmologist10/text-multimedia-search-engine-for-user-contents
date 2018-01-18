@@ -115,26 +115,28 @@ class SearchAudio(SearchWord):
 
         return index
 
-    def search_filename(self, dic, metatag ,hits):
+    def search_filename(self, dic, hits):
         """ Return the filename of respective artist/album/genre/year. """
 
         final_list = []
         for filename, data in dic.iteritems():
-            for key, value in data.items():
-                if key == metatag and value == self.searchword:
-                    final_list.append(filename)
+            for searchtag in self.searchword:
+                if searchtag in data.values():
+                    if filename not in final_list:
+                        final_list.append(filename)
 
         print 'Found', str(len(final_list)), 'hits'
 
-        if len(final_list) > hits:
-            print 'Showing', str(hits), 'hits'
+        if len(final_list) >= int(hits):
+            print 'Showing top', hits, 'hits', 'out of', str(len(final_list))
+            for num in range(int(hits)):
+                print final_list[num]
+        elif len(final_list)==0:
+            print 'Sorry, No such files found!'
         else:
-            print 'Showing', str(len(final_list)), 'hits instead of', str(hits), 'hits'
-
-        for files in final_list:
-            print files
-
-
+            print 'Only', str(len(final_list)), 'hits found, showing them:'
+            for files in final_list:
+                print files
 
 
 if __name__ == "__main__":
@@ -146,13 +148,10 @@ if __name__ == "__main__":
     parser.add_argument('-artist', '--artist', help='')
     parser.add_argument('-album', '--album', help ='')
     parser.add_argument('-genre', '--genre', help='')
-    parser.add_argument('-year', '--year', help = '')
+    parser.add_argument('-y', '--year', help = '')
     parser.add_argument('-d', '--dir', required=True, help='Full path of directory you want to index and search')
     parser.add_argument('-s', '--size', required=True, help='Maximum size of the file')
     parser.add_argument('-n', '--num', required=True, help='Number of hits')
-
-    if len(sys.argv)<4:
-        sys.argv.append('-h')
 
     args = parser.parse_args()
 
@@ -160,28 +159,17 @@ if __name__ == "__main__":
     max_size = str(args.size)
     number_of_hits = str(args.num)
 
-    try :
-        if args.artist:
-            searchword = str(args.artist).lower()
-            metatag = 'artist'
-        elif args.album:
-            searchword = str(args.album).lower()
-            metatag = 'album'
-        elif args.genre:
-            searchword = str(args.genre).lower()
-            metatag = 'genre'
-        elif args.year:
-            searchword = str(args.year)
-            metatag = 'year'
+    if args.artist or args.album or args.genre or args.year:
+        tags = [args.artist, args.album, args.genre, args.year]
+        searchtags = [str(tag).lower().strip() for tag in tags if tag is not None]
 
-        searcher = SearchAudio(searchword, max_size)
+        searcher = SearchAudio(searchtags, max_size)
         indexer = searcher.index_audio_files(search_path)
 
         if indexer != None:
-            searcher.search_filename(indexer, metatag, number_of_hits)
-
+            searcher.search_filename(indexer, number_of_hits)
         else:
             print 'Error, corrupt or non-existing index!'
 
-    except NameError:
-        print ('Need anyone arguments among artist,album, genre, year')
+    else:
+        print ('Need anyone arguments among artist, album, genre, year.')

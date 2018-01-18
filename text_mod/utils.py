@@ -1,11 +1,15 @@
 import time
 from contextlib import contextmanager
 
+# Tracking location
+import geopy
+from geopy.geocoders import Nominatim
+
 @contextmanager
 def clock_timer():
 
     t1 = time.time()
-    yield 
+    yield
     t2 = time.time()
     timediff = t2 - t1
     print 'Time taken =>', round(timediff, 5),'seconds.'
@@ -27,14 +31,11 @@ def ignore(*exceptions):
         yield
     except exceptions:
         pass
-    
-    
+
 def f(x,y):
     with clock_timer() as timer:
         z = x+y
-
     return z
 
 if __name__ == "__main__":
     print f(10, 20)
-    

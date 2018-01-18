@@ -11,6 +11,12 @@ import json
 from pathlib import Path
 from collections import defaultdict
 
+# import utility function
+from text_mod import utils
+# Location Library for tracing by 'state', 'city', 'country', 'pin/postal code'
+import geopy
+from geopy.geocoders import Nominatim
+
 from text_mod.search_word import SearchWord
 
 
@@ -27,19 +33,10 @@ class SearchImage(SearchWord):
         name as key for the given image files.
         """
 
-        filter_set = {'set_1': {'file_type',
-                                'file_size'
-                                'image_width',
-                                'image_height',
-                                'megapixels'
-                                'create_date',
-                                'model'},
+        filter_set = {'set_1': {'create_date'},
                       'set_2': {'g_p_s_latitude',
-                                'g_p_s_longitude',
-                                'g_p_s_altitude',
-                                'g_p_s_time_stamp',
-                                'g_p_s_date_stamp'},
-                    }
+                                'g_p_s_longitude'}
+                     }
 
         my_set = []
 
@@ -68,7 +65,51 @@ class SearchImage(SearchWord):
 
                     # Check if this is there in my interest set
                     if final_key in my_set:
-                        target[fname][final_key] = value
+                        if final_key == 'create_date':
+                            modified_value = value.split( )[0].split(':')
+                            target[fname]['year'] = modified_value[0].encode('utf-8')
+                            target[fname]['month'] = modified_value[1].encode('utf-8')
+                            target[fname]['day'] = modified_value[2].encode('utf-8')
+                        else:
+                            target[fname][final_key] = value
+
+        return target
+
+    def add_location_parameters_to_index(self, target):
+        """ Find Village, City, State, Country, Postal Code using gps latitude, gps logitude and
+        gps date stamp respectively.
+        """
+
+        geolocator = Nominatim()
+
+        for filename, data in target.iteritems():
+            if 'g_p_s_latitude' in data and 'g_p_s_longitude' in data:
+                location = geolocator.reverse((data['g_p_s_latitude'], data['g_p_s_longitude']))
+                try:
+                    target[filename]['village'] = location.raw['address']['village'].encode('utf-8').lower().strip()
+                except:
+                    target[filename]['village'] = None
+                try:
+                    target[filename]['city'] = location.raw['address']['city'].encode('utf-8').lower().strip()
+                except:
+                    target[filename]['city'] = None
+                try:
+                    target[filename]['state'] = location.raw['address']['state'].encode('utf-8').lower().strip()
+                except:
+                    target[filename]['state'] = None
+                try:
+                    target[filename]['country'] = location.raw['address']['country'].encode('utf-8').lower().strip()
+                except:
+                    target[filename]['country'] = None
+                try:
+                    target[filename]['postcode'] = str(location.raw['address']['postcode'])
+                except KeyError:
+                    target[filename]['postcode'] = None
+
+            else:
+                target[filename]['state'] = None
+                target[filename]['country'] = None
+                target[filename]['postcode'] = None
 
         return target
 
@@ -86,9 +127,9 @@ class SearchImage(SearchWord):
 
         if my_file.is_file():
             file_last_modify = os.path.getmtime(complete_name)
-            print file_last_modify
+            print 'File last modified at' + ':'  + str(file_last_modify)
             dir_last_modify = os.path.getmtime(loc)
-            print dir_last_modify
+            print 'Directory last modified at' + ':' + str(dir_last_modify)
 
             comp = dir_last_modify < file_last_modify
 
@@ -96,8 +137,7 @@ class SearchImage(SearchWord):
                 # If index is newer load index
                 print 'Loading', complete_name
                 index = self.load(complete_name)
-                # 2nd argument indicating no index was created
-                return index, False
+                return index
             else:
                 # Else rebuild index
                 rebuild = True
@@ -107,14 +147,37 @@ class SearchImage(SearchWord):
         else:
             print 'Index not present, building it...'
 
-        files = self.file_gen(loc)
+        with utils.clock_timer() as timer:
+            index = self.add_location_parameters_to_index(self.index_img_meta(self.file_gen(loc)))
 
-        index = self.index_img_meta(files)
         self.save(index, complete_name)
         print 'Index built at',complete_name
 
-        # 2nd argument indicating index was created
-        return index, True
+        return index
+
+    def search_filename(self, dic, hits):
+        """ Return the filename of respective artist/album/genre/year. """
+
+        final_list = []
+        for filename, data in dic.iteritems():
+            for searchtag in self.searchword:
+                if searchtag in data.values():
+                    if filename not in final_list:
+                        final_list.append(filename)
+
+        print 'Found', str(len(final_list)), 'hits'
+
+        # Filtering Top required number of Hits.
+        if len(final_list) >= int(hits):
+            print 'Showing top', hits, 'hits', 'out of', str(len(final_list))
+            for x in range(int(hits)):
+                print final_list[x]
+        else:
+            print 'Only', str(len(final_list)), 'hits found, showing them:'
+            for files in final_list:
+                print files
+
+
 
 if __name__ == "__main__":
 
@@ -122,16 +185,35 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description='It takes searchword as positional argument and locations as optional argument.')
-    parser.add_argument('searchword', help='The searchword which, you are looking for.')
-    parser.add_argument('-p', dest='loc', required=True, help='Path of directory.')
+    parser.add_argument('-village', '--village', help ='')
+    parser.add_argument('-city', '--city', help ='')
+    parser.add_argument('-state', '--state', help ='')
+    parser.add_argument('-country', '--country', help ='')
+    parser.add_argument('-pin', '--postal_code', help ='')
+    parser.add_argument('-year', '--year', help ='')
+    parser.add_argument('-mon', '--month', help ='')
+    parser.add_argument('-date', '--date', help ='')
+    parser.add_argument('-d', '--dir', required=True, help='Full path of directory you want to index and search')
     parser.add_argument('-s', '--size', required=True, help='Maximum size of the file')
-    if len(sys.argv)<3:
-        sys.argv.append('-h')
+    parser.add_argument('-n', '--num', required=True, help='Number of hits')
 
     args = parser.parse_args()
 
+    search_path = str(args.dir)
     max_size = str(args.size)
+    number_of_hits = str(args.num)
 
-    searcher = SearchImage(args.searchword, max_size)
-    index, status = searcher.index_image_files(args.loc)
-    print json.dumps(index, indent=4)
+    if args.village or args.city or args.state or args.country or args.postal_code or args.date or args.month or args.year:
+        tags = [args.village, args.city, args.state, args.country, args.postal_code, args.date, args.month, args.year]
+        searchtags = [str(tag).lower().strip() for tag in tags if tag is not None]
+
+        searcher = SearchImage(searchtags, max_size)
+        indexer = searcher.index_image_files(search_path)
+
+        if indexer != None:
+            searcher.search_filename(indexer, number_of_hits)
+        else:
+            print 'Error, corrupt or non-existing index!'
+
+    else:
+        print ('Need anyone arguments among city, state, country, postal_code, date, month or year')
