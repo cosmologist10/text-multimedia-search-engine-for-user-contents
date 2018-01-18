@@ -27,30 +27,19 @@ class SearchImage(SearchWord):
         name as key for the given image files.
         """
 
-        filter_set = {'set_1': {'file_modify_date',
-                                'file_inode_change_date',
-                                'file_access_date',
-                                'file_type',
-                                'file_size'},
-                      'set_2': {'orientation',
-                                'software',
-                                'modify_date',
-                                'flash',
-                                'date_time_original',
+        filter_set = {'set_1': {'file_type',
+                                'file_size'
+                                'image_width',
+                                'image_height',
+                                'megapixels'
                                 'create_date',
-                                'focal_length',
-                                'model',
-                                'x_resolution',
-                                'y_resolution',
-                                'y_resolution'},
-                      'set_3': {'g_p_s_latitude',
+                                'model'},
+                      'set_2': {'g_p_s_latitude',
                                 'g_p_s_longitude',
                                 'g_p_s_altitude',
                                 'g_p_s_time_stamp',
                                 'g_p_s_date_stamp'},
-                      'set_4': {'image_width',
-                                'image_height',
-                                'megapixels'}}
+                    }
 
         my_set = []
 
