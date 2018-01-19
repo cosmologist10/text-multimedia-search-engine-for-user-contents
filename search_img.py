@@ -13,6 +13,7 @@ from collections import defaultdict
 
 # import utility function
 from text_mod import utils
+
 # Location Library for tracing by 'state', 'city', 'country', 'pin/postal code'
 import geopy
 from geopy.geocoders import Nominatim
@@ -76,15 +77,16 @@ class SearchImage(SearchWord):
         return target
 
     def add_location_parameters_to_index(self, target):
-        """ Find Village, City, State, Country, Postal Code using gps latitude, gps logitude and
-        gps date stamp respectively.
+        """ Find Village, City, State, Country, Postal Code using gps latitude and gps logitude.
         """
 
         geolocator = Nominatim()
 
         for filename, data in target.iteritems():
             if 'g_p_s_latitude' in data and 'g_p_s_longitude' in data:
+                # using geopy to get location via latitude and longitude.
                 location = geolocator.reverse((data['g_p_s_latitude'], data['g_p_s_longitude']))
+                # exception handling of KeyError by storing None if not available
                 try:
                     target[filename]['village'] = location.raw['address']['village'].encode('utf-8').lower().strip()
                 except:
@@ -156,9 +158,10 @@ class SearchImage(SearchWord):
         return index
 
     def search_filename(self, dic, hits):
-        """ Return the filename of respective artist/album/genre/year. """
+        """ Return the filename of respective artist, album, genre, year. """
 
         final_list = []
+        # searching keywords in all files
         for filename, data in dic.iteritems():
             for searchtag in self.searchword:
                 if searchtag in data.values():
@@ -184,15 +187,15 @@ if __name__ == "__main__":
     import sys
     import argparse
 
-    parser = argparse.ArgumentParser(description='It takes searchword as positional argument and locations as optional argument.')
-    parser.add_argument('-village', '--village', help ='')
-    parser.add_argument('-city', '--city', help ='')
-    parser.add_argument('-state', '--state', help ='')
-    parser.add_argument('-country', '--country', help ='')
-    parser.add_argument('-pin', '--postal_code', help ='')
-    parser.add_argument('-year', '--year', help ='')
-    parser.add_argument('-mon', '--month', help ='')
-    parser.add_argument('-date', '--date', help ='')
+    parser = argparse.ArgumentParser(description='Folder indexer and searcher. Accepts searchword(village, city, state, country, pin, year, mon, date) and folder to search for as arguments.')
+    parser.add_argument('-village', '--village', help ='Name of village')
+    parser.add_argument('-city', '--city', help ='Name of city')
+    parser.add_argument('-state', '--state', help ='Name of state')
+    parser.add_argument('-country', '--country', help ='Name of country')
+    parser.add_argument('-pin', '--postal_code', help ='Postal code')
+    parser.add_argument('-year', '--year', help ='Year')
+    parser.add_argument('-mon', '--month', help ='Month')
+    parser.add_argument('-date', '--date', help ='Date')
     parser.add_argument('-d', '--dir', required=True, help='Full path of directory you want to index and search')
     parser.add_argument('-s', '--size', required=True, help='Maximum size of the file')
     parser.add_argument('-n', '--num', required=True, help='Number of hits')
@@ -203,6 +206,7 @@ if __name__ == "__main__":
     max_size = str(args.size)
     number_of_hits = str(args.num)
 
+    # Storing and normalisation the union of keywords via which we are looking for files
     if args.village or args.city or args.state or args.country or args.postal_code or args.date or args.month or args.year:
         tags = [args.village, args.city, args.state, args.country, args.postal_code, args.date, args.month, args.year]
         searchtags = [str(tag).lower().strip() for tag in tags if tag is not None]

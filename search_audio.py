@@ -116,9 +116,10 @@ class SearchAudio(SearchWord):
         return index
 
     def search_filename(self, dic, hits):
-        """ Return the filename of respective artist/album/genre/year. """
+        """ Return the filename of respective artist, album, genre, year. """
 
         final_list = []
+        # searching keywords in all files
         for filename, data in dic.iteritems():
             for searchtag in self.searchword:
                 if searchtag in data.values():
@@ -127,7 +128,8 @@ class SearchAudio(SearchWord):
 
         print 'Found', str(len(final_list)), 'hits'
 
-        if len(final_list) >= int(hits):
+        # Filtering Top required number of Hits
+        if int(len(final_list)) >= int(hits):
             print 'Showing top', hits, 'hits', 'out of', str(len(final_list))
             for num in range(int(hits)):
                 print final_list[num]
@@ -144,11 +146,11 @@ if __name__ == "__main__":
     import sys
     import argparse
 
-    parser = argparse.ArgumentParser(description='It takes searchword as positional argument and locations as optional argument.')
-    parser.add_argument('-artist', '--artist', help='')
-    parser.add_argument('-album', '--album', help ='')
-    parser.add_argument('-genre', '--genre', help='')
-    parser.add_argument('-y', '--year', help = '')
+    parser = argparse.ArgumentParser(description='Folder indexer and searcher. Accepts searchword(artist, album, genre, year) and folder to search for as arguments')
+    parser.add_argument('-artist', '--artist', help='Name of artist')
+    parser.add_argument('-album', '--album', help ='Name of album')
+    parser.add_argument('-genre', '--genre', help='Name of genre')
+    parser.add_argument('-year', '--year', help = 'Name of year')
     parser.add_argument('-d', '--dir', required=True, help='Full path of directory you want to index and search')
     parser.add_argument('-s', '--size', required=True, help='Maximum size of the file')
     parser.add_argument('-n', '--num', required=True, help='Number of hits')
@@ -159,6 +161,7 @@ if __name__ == "__main__":
     max_size = str(args.size)
     number_of_hits = str(args.num)
 
+    # Storing and normalisation the union of keywords via which we are looking for files
     if args.artist or args.album or args.genre or args.year:
         tags = [args.artist, args.album, args.genre, args.year]
         searchtags = [str(tag).lower().strip() for tag in tags if tag is not None]

@@ -117,7 +117,7 @@ class SearchWord(object):
 
     def searchWord(self, dic, hits):
         """ Return the occurance of the searchword in sorted order along with
-        the associated filename. "
+        the associated filename.
         """
 
         final_list = []
