@@ -121,7 +121,6 @@ class SearchWord(object):
         """
 
         final_list = []
-        print (dic)
         for key, value in dic.items():
             if key[0] == self.searchword:
                 x = (key[1], value)
@@ -130,14 +129,16 @@ class SearchWord(object):
         print 'Found ' + str(len(final_list)) + ' hits'
         result = sorted(final_list, key=operator.itemgetter(1), reverse=True)
 
-        if len(final_list) > hits:
-            print 'Showing', int(hits), 'hits'
+        if int(len(final_list)) > int(hits):
+            print 'Showing top', hits, 'hits', 'out of', str(len(final_list))
+            for i in result[:int(hits)]:
+                print i[0],'=>', i[1]
+        elif len(final_list)==0:
+            print 'Sorry, No such files found!'
         else:
-            print 'Showing', str(len(final_list)), 'hits instead of', str(hits), 'hits'
-
-        for i in result[:int(hits)]:
-            print i[0],'=>', i[1]
-
+            print 'Only', str(len(final_list)), 'hits found, showing them:'
+            for i in result[:int(len(final_list))]:
+                print i[0],'=>', i[1]
 
 if __name__ == "__main__":
 
