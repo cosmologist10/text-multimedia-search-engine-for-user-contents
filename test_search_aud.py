@@ -13,7 +13,6 @@ class TestSearchAudio(unittest.TestCase):
 
     """ Unit test class for SearchAudio. """
 
-
     def test_index_create(self):
         """ Remove and re-create all indixes from the location. """
 
@@ -31,8 +30,7 @@ class TestSearchAudio(unittest.TestCase):
         self.assertTrue(status == True)
 
         # To assert index was valid
-        self.assertTrue(len(index)>0)
-
+        self.assertTrue(len(index) > 0)
 
     def test_index_reuse(self):
         """ Reuse bulit index. """
@@ -45,8 +43,7 @@ class TestSearchAudio(unittest.TestCase):
         self.assertTrue(status == False)
 
         # To assert index was valid
-        self.assertTrue(len(index)>0)
-
+        self.assertTrue(len(index) > 0)
 
     def test_index_validity(self):
         """Specific file based testing for specific data."""
@@ -66,6 +63,7 @@ class TestSearchAudio(unittest.TestCase):
 
         print item
         print index.keys()
+
 
 if __name__ == "__main__":
 

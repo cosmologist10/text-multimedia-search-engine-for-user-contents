@@ -6,10 +6,11 @@ import string
 import hashlib
 import cPickle
 import operator
-import pathlib
+# import pathlib
 from pathlib import Path
 
 import utils
+
 
 class SearchWord(object):
     """ Word searcher cum indexer using Python dictionaries """
@@ -34,7 +35,7 @@ class SearchWord(object):
                 if filename.endswith(self.my_extensions):
                     full_filename = os.path.join(root, filename)
                     with utils.ignore_all():
-                        if os.path.getsize(full_filename)<=self.max_size:
+                        if os.path.getsize(full_filename) <= self.max_size:
                             yield full_filename
 
     def index_files(self, text_flist):
@@ -43,7 +44,7 @@ class SearchWord(object):
         dic = {}
 
         for f in text_flist:
-            print 'Processing file',f,'...'
+            print 'Processing file', f, '...'
             try:
                 for line in open(f):
                     words = line.split()
@@ -57,7 +58,7 @@ class SearchWord(object):
                             else:
                                 dic[word, f] = 1
             except IOError:
-                print 'Skipping file',f,'...'
+                print 'Skipping file', f, '...'
 
         return dic
 
@@ -72,7 +73,7 @@ class SearchWord(object):
         try:
             return cPickle.load(open(filename))
         except Exception, e:
-            print 'Error loading index file',filename,'=>',e
+            print 'Error loading index file', filename, '=>', e
             print 'Index possibly corrupt, deleting it'
             os.remove(filename)
 
@@ -87,7 +88,7 @@ class SearchWord(object):
 
         if my_file.is_file():
             file_last_modify = os.path.getmtime(complete_name)
-            print 'File last modified at'+ ':' + str(file_last_modify)
+            print 'File last modified at' + ':' + str(file_last_modify)
             dir_last_modify = os.path.getmtime(loc)
             print 'Directory last modified at' + ':' + str(dir_last_modify)
 
@@ -107,7 +108,7 @@ class SearchWord(object):
         else:
             print 'Index not present, building it...'
 
-        with utils.clock_timer() as timer:
+        with utils.clock_timer():
             index = self.index_files(self.file_gen(loc))
 
         self.save(index, complete_name)
@@ -132,13 +133,14 @@ class SearchWord(object):
         if int(len(final_list)) > int(hits):
             print 'Showing top', hits, 'hits', 'out of', str(len(final_list))
             for i in result[:int(hits)]:
-                print i[0],'=>', i[1]
-        elif len(final_list)==0:
+                print i[0], '=>', i[1]
+        elif len(final_list) == 0:
             print 'Sorry, No such files found!'
         else:
             print 'Only', str(len(final_list)), 'hits found, showing them:'
             for i in result[:int(len(final_list))]:
-                print i[0],'=>', i[1]
+                print i[0], '=>', i[1]
+
 
 if __name__ == "__main__":
 
@@ -147,12 +149,13 @@ if __name__ == "__main__":
 
     # no. of hits, we are interested in (n)
 
-    parser = argparse.ArgumentParser(description='Folder indexer and searcher. Accepts searchword and folder to search for as arguments')
-    parser.add_argument('-w','--word', help='The searchword which, you are looking for.')
+    parser = argparse.ArgumentParser(
+        description='Folder indexer and searcher. Accepts searchword and folder to search for as arguments')
+    parser.add_argument('-w', '--word', help='The searchword which, you are looking for.')
     parser.add_argument('-d', '--dir', required=True, help='Full path of directory you want to index and search')
     parser.add_argument('-s', '--size', required=True, help='Maximum size of the file')
     parser.add_argument('-n', '--num', required=True, help='Number of hits')
-    if len(sys.argv)<4:
+    if len(sys.argv) < 4:
         sys.argv.append('-h')
 
     args = parser.parse_args()
@@ -164,7 +167,7 @@ if __name__ == "__main__":
 
     searcher = SearchWord(search_word, max_size)
     indexer = searcher.indexFilename(search_path)
-    if indexer != None:
+    if indexer is not None:
         searcher.searchWord(indexer, number_of_hits)
     else:
         print 'Error, corrupt or non-existing index!'

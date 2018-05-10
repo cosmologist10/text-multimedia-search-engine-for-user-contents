@@ -2,10 +2,10 @@ import os
 import time
 import re
 import hashlib
-import cPickle
-import operator
-import pathlib
-import json
+# import cPickle
+# import operator
+# import pathlib
+# import json
 from pathlib import Path
 from collections import defaultdict
 from text_mod import utils
@@ -23,7 +23,6 @@ class SearchAudio(SearchWord):
 
         SearchWord.__init__(self, searchword, max_size)
         self.my_extensions = ('.mp3', '.ogg', '.wav', '.flac', '.wma')
-
 
     def index_audio_meta(self, audio_flist):
         """
@@ -54,7 +53,6 @@ class SearchAudio(SearchWord):
                 print 'Filename =>', fname
                 # get metadata for the file
                 metadata = et.get_metadata(fname)
-
 
                 for key, value in metadata.iteritems():
                     if ':' in key:
@@ -87,7 +85,7 @@ class SearchAudio(SearchWord):
 
         if my_file.is_file():
             file_last_modify = os.path.getmtime(complete_name)
-            print 'File last modified at'+ ':' + str(file_last_modify)
+            print 'File last modified at' + ':' + str(file_last_modify)
             dir_last_modify = os.path.getmtime(loc)
             print 'Directory last modified at' + ':' + str(dir_last_modify)
 
@@ -107,7 +105,7 @@ class SearchAudio(SearchWord):
         else:
             print 'Index not present, building it...'
 
-        with utils.clock_timer() as timer:
+        with utils.clock_timer():
             index = self.index_audio_meta(self.file_gen(loc))
 
         self.save(index, complete_name)
@@ -133,7 +131,7 @@ class SearchAudio(SearchWord):
             print 'Showing top', hits, 'hits', 'out of', str(len(final_list))
             for num in range(int(hits)):
                 print final_list[num]
-        elif len(final_list)==0:
+        elif len(final_list) == 0:
             print 'Sorry, No such files found!'
         else:
             print 'Only', str(len(final_list)), 'hits found, showing them:'
@@ -143,14 +141,15 @@ class SearchAudio(SearchWord):
 
 if __name__ == "__main__":
 
-    import sys
     import argparse
 
-    parser = argparse.ArgumentParser(description='Folder indexer and searcher. Accepts searchword(artist, album, genre, year) and folder to search for as arguments')
+    parser = argparse.ArgumentParser(
+        description='Folder indexer and searcher. Accepts searchword(artist, album, genre, year) \
+                     and folder to search for as arguments')
     parser.add_argument('-artist', '--artist', help='Name of artist')
-    parser.add_argument('-album', '--album', help ='Name of album')
+    parser.add_argument('-album', '--album', help='Name of album')
     parser.add_argument('-genre', '--genre', help='Name of genre')
-    parser.add_argument('-year', '--year', help = 'Name of year')
+    parser.add_argument('-year', '--year', help='Name of year')
     parser.add_argument('-d', '--dir', required=True, help='Full path of directory you want to index and search')
     parser.add_argument('-s', '--size', required=True, help='Maximum size of the file')
     parser.add_argument('-n', '--num', required=True, help='Number of hits')
@@ -169,7 +168,7 @@ if __name__ == "__main__":
         searcher = SearchAudio(searchtags, max_size)
         indexer = searcher.index_audio_files(search_path)
 
-        if indexer != None:
+        if indexer is not None:
             searcher.search_filename(indexer, number_of_hits)
         else:
             print 'Error, corrupt or non-existing index!'
