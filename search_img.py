@@ -3,19 +3,11 @@ import time
 import re
 import exiftool
 import hashlib
-import cPickle
-import operator
-import pathlib
-import pprint
-import json
 from pathlib import Path
 from collections import defaultdict
-
-# import utility function
 from text_mod import utils
 
 # Location Library for tracing by 'state', 'city', 'country', 'pin/postal code'
-import geopy
 from geopy.geocoders import Nominatim
 
 from text_mod.search_word import SearchWord
@@ -37,7 +29,7 @@ class SearchImage(SearchWord):
         filter_set = {'set_1': {'create_date'},
                       'set_2': {'g_p_s_latitude',
                                 'g_p_s_longitude'}
-                     }
+                      }
 
         my_set = []
 
@@ -67,7 +59,7 @@ class SearchImage(SearchWord):
                     # Check if this is there in my interest set
                     if final_key in my_set:
                         if final_key == 'create_date':
-                            modified_value = value.split( )[0].split(':')
+                            modified_value = value.split()[0].split(':')
                             target[fname]['year'] = modified_value[0].encode('utf-8')
                             target[fname]['month'] = modified_value[1].encode('utf-8')
                             target[fname]['day'] = modified_value[2].encode('utf-8')
@@ -89,19 +81,19 @@ class SearchImage(SearchWord):
                 # exception handling of KeyError by storing None if not available
                 try:
                     target[filename]['village'] = location.raw['address']['village'].encode('utf-8').lower().strip()
-                except:
+                except Exception:
                     target[filename]['village'] = None
                 try:
                     target[filename]['city'] = location.raw['address']['city'].encode('utf-8').lower().strip()
-                except:
+                except Exception:
                     target[filename]['city'] = None
                 try:
                     target[filename]['state'] = location.raw['address']['state'].encode('utf-8').lower().strip()
-                except:
+                except Exception:
                     target[filename]['state'] = None
                 try:
                     target[filename]['country'] = location.raw['address']['country'].encode('utf-8').lower().strip()
-                except:
+                except Exception:
                     target[filename]['country'] = None
                 try:
                     target[filename]['postcode'] = str(location.raw['address']['postcode'])
@@ -129,7 +121,7 @@ class SearchImage(SearchWord):
 
         if my_file.is_file():
             file_last_modify = os.path.getmtime(complete_name)
-            print 'File last modified at' + ':'  + str(file_last_modify)
+            print 'File last modified at' + ':' + str(file_last_modify)
             dir_last_modify = os.path.getmtime(loc)
             print 'Directory last modified at' + ':' + str(dir_last_modify)
 
@@ -149,11 +141,11 @@ class SearchImage(SearchWord):
         else:
             print 'Index not present, building it...'
 
-        with utils.clock_timer() as timer:
+        with utils.clock_timer():
             index = self.add_location_parameters_to_index(self.index_img_meta(self.file_gen(loc)))
 
         self.save(index, complete_name)
-        print 'Index built at',complete_name
+        print 'Index built at', complete_name
 
         return index
 
@@ -181,21 +173,20 @@ class SearchImage(SearchWord):
                 print files
 
 
-
 if __name__ == "__main__":
-
-    import sys
     import argparse
 
-    parser = argparse.ArgumentParser(description='Folder indexer and searcher. Accepts searchword(village, city, state, country, pin, year, mon, date) and folder to search for as arguments.')
-    parser.add_argument('-village', '--village', help ='Name of village')
-    parser.add_argument('-city', '--city', help ='Name of city')
-    parser.add_argument('-state', '--state', help ='Name of state')
-    parser.add_argument('-country', '--country', help ='Name of country')
-    parser.add_argument('-pin', '--postal_code', help ='Postal code')
-    parser.add_argument('-year', '--year', help ='Year')
-    parser.add_argument('-mon', '--month', help ='Month')
-    parser.add_argument('-date', '--date', help ='Date')
+    parser = argparse.ArgumentParser(
+        description='Folder indexer and searcher. Accepts searchword(village, city, state, country, pin, year, mon, date) \
+                     and folder to search for as arguments.')
+    parser.add_argument('-village', '--village', help='Name of village')
+    parser.add_argument('-city', '--city', help='Name of city')
+    parser.add_argument('-state', '--state', help='Name of state')
+    parser.add_argument('-country', '--country', help='Name of country')
+    parser.add_argument('-pin', '--postal_code', help='Postal code')
+    parser.add_argument('-year', '--year', help='Year')
+    parser.add_argument('-mon', '--month', help='Month')
+    parser.add_argument('-date', '--date', help='Date')
     parser.add_argument('-d', '--dir', required=True, help='Full path of directory you want to index and search')
     parser.add_argument('-s', '--size', required=True, help='Maximum size of the file')
     parser.add_argument('-n', '--num', required=True, help='Number of hits')
@@ -214,7 +205,7 @@ if __name__ == "__main__":
         searcher = SearchImage(searchtags, max_size)
         indexer = searcher.index_image_files(search_path)
 
-        if indexer != None:
+        if indexer is not None:
             searcher.search_filename(indexer, number_of_hits)
         else:
             print 'Error, corrupt or non-existing index!'

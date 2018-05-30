@@ -1,11 +1,6 @@
-"""
-Simple unit test for search_img module
-"""
-
-import unittest
 import os
+import unittest
 import collections
-
 from search_img import SearchImage
 
 
@@ -18,7 +13,7 @@ class TestSearchImage(unittest.TestCase):
         search_img = SearchImage('test')
 
         # Clear the location
-        os.system('rm -rf ' +  search_img.save_path)
+        os.system('rm -rf ' + search_img.save_path)
 
         # Have to do this again to recreate paths
         search_img = SearchImage('test')
@@ -29,7 +24,7 @@ class TestSearchImage(unittest.TestCase):
         self.assertTrue(status == True)
 
         # To assert index was valid
-        self.assertTrue(len(index)>0)
+        self.assertTrue(len(index) > 0)
 
     def test_index_reuse(self):
         """ Reuse bulit index. """
@@ -41,7 +36,7 @@ class TestSearchImage(unittest.TestCase):
         self.assertTrue(status == False)
 
         # To assert index was valid
-        self.assertTrue(len(index)>0)
+        self.assertTrue(len(index) > 0)
 
     def test_index_validity(self):
         """Specific file based testing for specific data."""
@@ -71,6 +66,7 @@ class TestSearchImage(unittest.TestCase):
         item = index['testing/image/filter_lenovo.jpg']
         print item
         self.assertTrue('model' in item)
+
 
 if __name__ == "__main__":
 
