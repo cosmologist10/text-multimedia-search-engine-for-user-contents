@@ -3,19 +3,11 @@ import time
 import re
 import exiftool
 import hashlib
-# import cPickle
-# import operator
-# import pathlib
-# import pprint
-# import json
 from pathlib import Path
 from collections import defaultdict
-
-# import utility function
 from text_mod import utils
 
 # Location Library for tracing by 'state', 'city', 'country', 'pin/postal code'
-# import geopy
 from geopy.geocoders import Nominatim
 
 from text_mod.search_word import SearchWord

@@ -1,10 +1,6 @@
 import time
 from contextlib import contextmanager
 
-# Tracking location
-# import geopy
-# from geopy.geocoders import Nominatim
-
 
 @contextmanager
 def clock_timer():

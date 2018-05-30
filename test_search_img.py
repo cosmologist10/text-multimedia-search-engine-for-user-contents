@@ -1,11 +1,6 @@
-"""
-Simple unit test for search_img module
-"""
-
-import unittest
 import os
+import unittest
 import collections
-
 from search_img import SearchImage
 
 

@@ -1,7 +1,3 @@
-"""
-Simple unit test for search_audio module.
-"""
-
 import unittest
 import os
 import collections
@@ -28,7 +24,6 @@ class TestSearchAudio(unittest.TestCase):
 
         # To assert index was rebuilt
         self.assertTrue(status == True)
-
         # To assert index was valid
         self.assertTrue(len(index) > 0)
 

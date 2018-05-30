@@ -6,10 +6,8 @@ import string
 import hashlib
 import cPickle
 import operator
-# import pathlib
-from pathlib import Path
-
 import utils
+from pathlib import Path
 
 
 class SearchWord(object):

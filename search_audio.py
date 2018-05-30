@@ -2,17 +2,10 @@ import os
 import time
 import re
 import hashlib
-# import cPickle
-# import operator
-# import pathlib
-# import json
-from pathlib import Path
-from collections import defaultdict
-from text_mod import utils
-
-# metadata extraction library
 import exiftool
-
+from pathlib import Path
+from text_mod import utils
+from collections import defaultdict
 from text_mod.search_word import SearchWord
 
 
